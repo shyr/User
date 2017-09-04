@@ -64,6 +64,38 @@ func init() {
         }
       }
     },
+    "/user": {
+      "post": {
+        "tags": [
+          "user"
+        ],
+        "summary": "유저 정보를 저장한다.",
+        "parameters": [
+          {
+            "description": "user id",
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/user"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/user"
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/user/{id}": {
       "get": {
         "tags": [

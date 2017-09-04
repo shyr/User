@@ -10,7 +10,7 @@ Package restapi Simple Address API
     Version: 0.1.0
 
     Consumes:
-    - application/joinc.user-address.v1+json
+    - application/json
 
     Produces:
     - application/joinc.user-address.v1+json

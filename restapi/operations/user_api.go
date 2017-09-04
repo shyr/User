@@ -43,6 +43,9 @@ func NewUserAPI(spec *loads.Document) *UserAPI {
 		UserGetUserIDHandler: user.GetUserIDHandlerFunc(func(params user.GetUserIDParams) middleware.Responder {
 			return middleware.NotImplemented("operation UserGetUserID has not yet been implemented")
 		}),
+		UserPostUserHandler: user.PostUserHandlerFunc(func(params user.PostUserParams) middleware.Responder {
+			return middleware.NotImplemented("operation UserPostUser has not yet been implemented")
+		}),
 	}
 }
 
@@ -66,7 +69,7 @@ type UserAPI struct {
 	// It has a default implemention in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
 
-	// JSONConsumer registers a consumer for a "application/joinc.user-address.v1+json" mime type
+	// JSONConsumer registers a consumer for a "application/json" mime type
 	JSONConsumer runtime.Consumer
 
 	// JSONProducer registers a producer for a "application/joinc.user-address.v1+json" mime type
@@ -76,6 +79,8 @@ type UserAPI struct {
 	UserGetSearchHandler user.GetSearchHandler
 	// UserGetUserIDHandler sets the operation handler for the get user ID operation
 	UserGetUserIDHandler user.GetUserIDHandler
+	// UserPostUserHandler sets the operation handler for the post user operation
+	UserPostUserHandler user.PostUserHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -145,6 +150,10 @@ func (o *UserAPI) Validate() error {
 
 	if o.UserGetUserIDHandler == nil {
 		unregistered = append(unregistered, "user.GetUserIDHandler")
+	}
+
+	if o.UserPostUserHandler == nil {
+		unregistered = append(unregistered, "user.PostUserHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -242,6 +251,11 @@ func (o *UserAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/user/{id}"] = user.NewGetUserID(o.context, o.UserGetUserIDHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/user"] = user.NewPostUser(o.context, o.UserPostUserHandler)
 
 }
 

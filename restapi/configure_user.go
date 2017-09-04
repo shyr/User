@@ -27,9 +27,16 @@ func configureFlags(api *operations.UserAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
 
+type UserInfoError struct {
+	Body models.Error `json:"body"`
+}
+
+func (u *UserInfoError) WriteResponse(w http.ResponseWriter, producer runtime.Producer) {
+	producer.Produce(w, u.Body)
+}
+
 type UserInfoOK struct {
 	Body models.User `json:"body"`
-	DB   *sql.DB
 }
 
 func (u *UserInfoOK) WriteResponse(w http.ResponseWriter, producer runtime.Producer) {
@@ -83,6 +90,17 @@ func configureAPI(api *operations.UserAPI) http.Handler {
 			Name:   name,
 			UserID: &params.ID}
 		return &UserInfoOK{Body: info}
+	})
+	api.UserPostUserHandler = user.PostUserHandlerFunc(func(params user.PostUserParams) middleware.Responder {
+		_, err := db.Exec("INSERT INTO user SET name=?, email=?, address=?, id=?",
+			params.Body.Name,
+			params.Body.Email,
+			params.Body.Address,
+			params.Body.UserID)
+		if err != nil {
+			return &UserInfoError{Body: models.Error{Code: 500, Message: err.Error()}}
+		}
+		return &UserInfoOK{Body: *params.Body}
 	})
 
 	api.ServerShutdown = func() {}
